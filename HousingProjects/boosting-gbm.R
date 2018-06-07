@@ -1,3 +1,12 @@
+# Require dependencies
+install.packages("DMwR")
+install.packages("gbm")
+install.packages("missForest")
+install.packages("doParallel")
+install.packages("Metrics")
+install.packages("caret")
+install.packages("ggplot2")
+
 library(DMwR)
 library(gbm)
 library(missForest)
