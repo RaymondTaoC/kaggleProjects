@@ -156,20 +156,29 @@ def embed_and_attach(X, X_cat, cardinality):
     return tf.concat([embedded_x, X], axis=1)
 
 
-if __name__ == '__main__':
-    input_dir = r"C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\RawData"
-    print('Input files:\n{}'.format(os.listdir(input_dir)))
+def pre_process(data_dir, pickle_dir=None, load_pickle=False):
+    if load_pickle:
+        assert isinstance(pickle_dir, str), "'pickle_dir' argument must be a string."
+        training_df = pd.read_pickle(pickle_dir + r'\train_df.pkl')
+        predicting_df = pd.read_pickle(pickle_dir + r'\predict_df.pkl')
+        target = np.load(pickle_dir + r'\target.pkl')
+        cont_feats_idx = np.load(pickle_dir + r'\cont_feats_idx.pkl')
+        cat_feats_idx = np.load(pickle_dir + r'\cat_feats_idx.pkl')
+        meta_df = pd.read_pickle(pickle_dir + r'\meta_df.pkl')
+        return training_df, predicting_df, target, cont_feats_idx, cat_feats_idx, meta_df
+
+    print('Input files:\n{}'.format(os.listdir(data_dir)))
     print('Loading data sets...')
 
     sample_size = None
-    app_train_df = pd.read_csv(os.path.join(input_dir, 'application_train.csv'), nrows=sample_size)
-    app_test_df = pd.read_csv(os.path.join(input_dir, 'application_test.csv'), nrows=sample_size)
-    bureau_df = pd.read_csv(os.path.join(input_dir, 'bureau.csv'), nrows=sample_size)
-    bureau_balance_df = pd.read_csv(os.path.join(input_dir, 'bureau_balance.csv'), nrows=sample_size)
-    credit_card_df = pd.read_csv(os.path.join(input_dir, 'credit_card_balance.csv'), nrows=sample_size)
-    pos_cash_df = pd.read_csv(os.path.join(input_dir, 'POS_CASH_balance.csv'), nrows=sample_size)
-    prev_app_df = pd.read_csv(os.path.join(input_dir, 'previous_application.csv'), nrows=sample_size)
-    install_df = pd.read_csv(os.path.join(input_dir, 'installments_payments.csv'), nrows=sample_size)
+    app_train_df = pd.read_csv(os.path.join(data_dir, 'application_train.csv'), nrows=sample_size)
+    app_test_df = pd.read_csv(os.path.join(data_dir, 'application_test.csv'), nrows=sample_size)
+    bureau_df = pd.read_csv(os.path.join(data_dir, 'bureau.csv'), nrows=sample_size)
+    bureau_balance_df = pd.read_csv(os.path.join(data_dir, 'bureau_balance.csv'), nrows=sample_size)
+    credit_card_df = pd.read_csv(os.path.join(data_dir, 'credit_card_balance.csv'), nrows=sample_size)
+    pos_cash_df = pd.read_csv(os.path.join(data_dir, 'POS_CASH_balance.csv'), nrows=sample_size)
+    prev_app_df = pd.read_csv(os.path.join(data_dir, 'previous_application.csv'), nrows=sample_size)
+    install_df = pd.read_csv(os.path.join(data_dir, 'installments_payments.csv'), nrows=sample_size)
     print('Data loaded.\nMain application training data set shape = {}'.format(app_train_df.shape))
     print('Main application test data set shape = {}'.format(app_test_df.shape))
     print('Positive target proportion = {:.2f}'.format(app_train_df['TARGET'].mean()))
@@ -179,8 +188,10 @@ if __name__ == '__main__':
     # Merge the datasets into a single one for training
     len_train = len(app_train_df)
     app_both = pd.concat([app_train_df, app_test_df])
+    ####
     merged_df = feature_engineering(app_both, bureau_df, bureau_balance_df, credit_card_df,
                                     pos_cash_df, prev_app_df, install_df)
+    ####
 
     # Separate metadata
     meta_cols = ['SK_ID_CURR', 'SK_ID_BUREAU', 'SK_ID_PREV']
@@ -279,10 +290,25 @@ if __name__ == '__main__':
 
     # Building the graph
     # Re-separate into labelled and unlabelled
-    train_df = merged_df[:len_train]
-    predict_df = merged_df[len_train:]
-    del merged_df, app_train_df, app_test_df, bureau_df, bureau_balance_df, credit_card_df, pos_cash_df, prev_app_df
+    training_df = merged_df[:len_train]
+    predicting_df = merged_df[len_train:]
     gc.collect()
+
+    if pickle_dir:
+        training_df.to_pickle(pickle_dir + r'\train_df.pkl')
+        predicting_df.to_pickle(pickle_dir + r'\predict_df.pkl')
+        meta_df.to_pickle(pickle_dir + r'\meta_df.pkl')
+        np.save(pickle_dir + r'\target.pkl', target)
+        np.save(pickle_dir + r'\cont_feats_idx.pkl', cont_feats_idx)
+        np.save(pickle_dir + r'\cat_feats_idx.pkl', cat_feats_idx)
+
+    return training_df, predicting_df, target, cont_feats_idx, cat_feats_idx, meta_df
+
+
+if __name__ == '__main__':
+    data_path = r"C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\RawData"
+    train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_path, True)
+    len_train = len(train_df)
 
     # Create a validation set to check training performance
     X_train, X_valid, y_train, y_valid = train_test_split(train_df, target, test_size=0.1, random_state=2,
@@ -377,8 +403,7 @@ if __name__ == '__main__':
 
     # Define the optimiser
     with tf.name_scope('train'):
-        learning_rate = 0.01
-        optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,
+        optimizer = tf.train.MomentumOptimizer(learning_rate=LEARNING_RATE,
                                                momentum=0.9, use_nesterov=True)
         # optimiser = tf.train.AdamOptimizer()  # AdagradOptimizer(learning_rate=LEARNING_RATE)
         train_step = optimizer.minimize(loss)
