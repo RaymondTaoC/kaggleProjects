@@ -159,11 +159,11 @@ def embed_and_attach(X, X_cat, cardinality):
 def pre_process(data_dir, pickle_dir=None, load_pickle=False):
     if load_pickle:
         assert isinstance(pickle_dir, str), "'pickle_dir' argument must be a string."
-        training_df = pd.read_pickle(pickle_dir + r'\train_df.pkl')
-        predicting_df = pd.read_pickle(pickle_dir + r'\predict_df.pkl')
-        target = np.load(pickle_dir + r'\target.pkl')
-        cont_feats_idx = np.load(pickle_dir + r'\cont_feats_idx.pkl')
-        cat_feats_idx = np.load(pickle_dir + r'\cat_feats_idx.pkl')
+        training_df = np.load(pickle_dir + r'\train_df.npy')
+        predicting_df = np.load(pickle_dir + r'\predict_df.npy')
+        target = np.load(pickle_dir + r'\target.npy')
+        cont_feats_idx = np.load(pickle_dir + r'\cont_feats_idx.npy')
+        cat_feats_idx = np.load(pickle_dir + r'\cat_feats_idx.npy')
         meta_df = pd.read_pickle(pickle_dir + r'\meta_df.pkl')
         return training_df, predicting_df, target, cont_feats_idx, cat_feats_idx, meta_df
 
@@ -187,11 +187,10 @@ def pre_process(data_dir, pickle_dir=None, load_pickle=False):
 
     # Merge the datasets into a single one for training
     len_train = len(app_train_df)
-    app_both = pd.concat([app_train_df, app_test_df])
-    ####
+    app_both = pd.concat([app_train_df, app_test_df], sort=True)
     merged_df = feature_engineering(app_both, bureau_df, bureau_balance_df, credit_card_df,
                                     pos_cash_df, prev_app_df, install_df)
-    ####
+
 
     # Separate metadata
     meta_cols = ['SK_ID_CURR', 'SK_ID_BUREAU', 'SK_ID_PREV']
@@ -295,19 +294,22 @@ def pre_process(data_dir, pickle_dir=None, load_pickle=False):
     gc.collect()
 
     if pickle_dir:
-        training_df.to_pickle(pickle_dir + r'\train_df.pkl')
-        predicting_df.to_pickle(pickle_dir + r'\predict_df.pkl')
+        np.save(pickle_dir + r'\train_df.npy', training_df)
+        np.save(pickle_dir + r'\predict_df.npy', predicting_df)
         meta_df.to_pickle(pickle_dir + r'\meta_df.pkl')
-        np.save(pickle_dir + r'\target.pkl', target)
-        np.save(pickle_dir + r'\cont_feats_idx.pkl', cont_feats_idx)
-        np.save(pickle_dir + r'\cat_feats_idx.pkl', cat_feats_idx)
+        np.save(pickle_dir + r'\target.npy', target)
+        np.save(pickle_dir + r'\cont_feats_idx.npy', cont_feats_idx)
+        np.save(pickle_dir + r'\cat_feats_idx.npy', cat_feats_idx)
 
     return training_df, predicting_df, target, cont_feats_idx, cat_feats_idx, meta_df
 
 
 if __name__ == '__main__':
     data_path = r"C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\RawData"
-    train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_path, True)
+    pkl_dir = r'C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\NN-pkl'
+    train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_path,
+                                                                                       pickle_dir=pkl_dir,
+                                                                                       load_pickle=True)
     len_train = len(train_df)
 
     # Create a validation set to check training performance
@@ -324,7 +326,7 @@ if __name__ == '__main__':
 
     # Learning parameters
     LEARNING_RATE = 0.01
-    N_EPOCHS = 30
+    N_EPOCHS = 100
     N_ITERATIONS = 400
     BATCH_SIZE = 250
 
