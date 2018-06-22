@@ -330,12 +330,15 @@ if __name__ == '__main__':
     # Overfitting is a challenge so add L2 regularisation to weights in 1st layer &
     # a couple of dropout layers
     with tf.name_scope('dnn'):
+        he_init = tf.contrib.layers.variance_scaling_initializer()
+
         hidden_layer_1 = tf.layers.dense(inputs=X,
                                          units=N_HIDDEN_1,
                                          name='first_hidden_layer',
-                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=0.3))
+                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=0.3),
+                                         kernel_initializer=he_init)
         hidden_layer_1 = tf.layers.batch_normalization(hidden_layer_1, training=train_mode)
-        hidden_layer_1 = tf.nn.relu(hidden_layer_1)
+        hidden_layer_1 = tf.nn.elu(hidden_layer_1)
 
         drop_layer_1 = tf.layers.dropout(inputs=hidden_layer_1,
                                          rate=0.4,
@@ -345,9 +348,10 @@ if __name__ == '__main__':
         hidden_layer_2 = tf.layers.dense(inputs=drop_layer_1,
                                          units=N_HIDDEN_2,
                                          name='second_hidden_layer',
-                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=0.1))
+                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=0.1),
+                                         kernel_initializer=he_init)
         hidden_layer_2 = tf.layers.batch_normalization(hidden_layer_2, training=train_mode)
-        hidden_layer_2 = tf.nn.relu(hidden_layer_2)
+        hidden_layer_2 = tf.nn.elu(hidden_layer_2)
 
         drop_layer_2 = tf.layers.dropout(inputs=hidden_layer_2,
                                          rate=0.2,
@@ -356,13 +360,15 @@ if __name__ == '__main__':
 
         hidden_layer_3 = tf.layers.dense(inputs=drop_layer_2,
                                          units=N_HIDDEN_3,
-                                         name='third_hidden_layer')
+                                         name='third_hidden_layer',
+                                         kernel_initializer=he_init)
         hidden_layer_3 = tf.layers.batch_normalization(hidden_layer_3, training=train_mode)
-        hidden_layer_3 = tf.nn.relu(hidden_layer_3)
+        hidden_layer_3 = tf.nn.elu(hidden_layer_3)
 
         logits = tf.layers.dense(inputs=hidden_layer_3,
                                  units=n_classes,
-                                 name='outputs')
+                                 name='outputs',
+                                 kernel_initializer=he_init)
 
     # Define the loss function for training as cross entropy
     with tf.name_scope('loss'):
@@ -371,8 +377,11 @@ if __name__ == '__main__':
 
     # Define the optimiser
     with tf.name_scope('train'):
-        optimiser = tf.train.AdamOptimizer()  # AdagradOptimizer(learning_rate=LEARNING_RATE)
-        train_step = optimiser.minimize(loss)
+        learning_rate = 0.01
+        optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,
+                                               momentum=0.9, use_nesterov=True)
+        # optimiser = tf.train.AdamOptimizer()  # AdagradOptimizer(learning_rate=LEARNING_RATE)
+        train_step = optimizer.minimize(loss)
 
     # Output the class probabilities to I can get the AUC
     with tf.name_scope('eval'):
