@@ -156,7 +156,7 @@ def embed_and_attach(X, X_cat, cardinality):
     return tf.concat([embedded_x, X], axis=1)
 
 
-def pre_process(data_dir, pickle_dir=None, load_pickle=False):
+def pre_process(data_dir, pickle_dir=None, load_pickle=False, box_cox_transform=False):
     if load_pickle:
         assert isinstance(pickle_dir, str), "'pickle_dir' argument must be a string."
         training_df = np.load(pickle_dir + r'\train_df.npy')
@@ -295,6 +295,8 @@ def pre_process(data_dir, pickle_dir=None, load_pickle=False):
 
     if pickle_dir:
         np.save(pickle_dir + r'\train_df.npy', training_df)
+        df = pd.DataFrame(training_df)
+        df.to_csv(pickle_dir + r'\train.csv')
         np.save(pickle_dir + r'\predict_df.npy', predicting_df)
         meta_df.to_pickle(pickle_dir + r'\meta_df.pkl')
         np.save(pickle_dir + r'\target.npy', target)
@@ -304,21 +306,32 @@ def pre_process(data_dir, pickle_dir=None, load_pickle=False):
     return training_df, predicting_df, target, cont_feats_idx, cat_feats_idx, meta_df
 
 
+def _get_paths(station='Subgraph'):
+    if station == 'Windows':
+        win_data_path = r"C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\RawData"
+        win_pkl_dir = r'C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\NN-pkl'
+        return win_data_path, win_pkl_dir
+    else:
+        sub_data_path = "/home/user/Documents/Kaggle/CreditDefaultRisk/RawDataSets"
+        sub_pkl_dir = '/home/user/Documents/Kaggle/CreditDefaultRisk/EngineeredData'
+        return sub_data_path, sub_pkl_dir
+
+
 if __name__ == '__main__':
-    data_path = r"C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\RawData"
-    pkl_dir = r'C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\NN-pkl'
+    data_path, pkl_dir = _get_paths(station='Subgraph')
     train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_path,
                                                                                        pickle_dir=pkl_dir,
-                                                                                       load_pickle=True)
-    len_train = len(train_df)
+                                                                                       load_pickle=False)
 
     # Create a validation set to check training performance
     X_train, X_valid, y_train, y_valid = train_test_split(train_df, target, test_size=0.1, random_state=2,
                                                           stratify=target[:, 0])
 
+    len_train = len(X_train)
+
     # Fixed graph parameters
     # EMBEDDING_SIZE = 3  # Use cardinality / 2 instead
-    N_HIDDEN_1 = 80
+    N_HIDDEN_1 = 200
     N_HIDDEN_2 = 80
     N_HIDDEN_3 = 40
     n_cont_inputs = X_train[:, cont_feats_idx].shape[1]
