@@ -239,6 +239,8 @@ def pre_process(data_dir, pickle_dir=None, load=False):
     ]
     categorical_feats = categorical_feats + non_obj_categoricals
 
+    combined_df = merged_df
+
     # Extract target before scaling
     labels = merged_df.pop('TARGET')
     labels = labels[:len_train]
@@ -282,8 +284,6 @@ def pre_process(data_dir, pickle_dir=None, load=False):
     )
     cont_feat_lookup.head()
 
-    combined_df = merged_df
-
     # Scaling
     scaler = StandardScaler()
     final_col_names = merged_df.columns
@@ -301,7 +301,7 @@ def pre_process(data_dir, pickle_dir=None, load=False):
 
     if pickle_dir:
         np.save(pickle_dir + r'\train_df.npy', training_df)
-        combined_df.to_csv(pickle_dir + r'\train.csv')
+        combined_df.to_csv(pickle_dir + r'\train.csv', index=False)
         np.save(pickle_dir + r'\predict_df.npy', predicting_df)
         meta_df.to_pickle(pickle_dir + r'\meta_df.pkl')
         np.save(pickle_dir + r'\target.npy', target)
