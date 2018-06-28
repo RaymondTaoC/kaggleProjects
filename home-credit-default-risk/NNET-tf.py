@@ -312,7 +312,8 @@ def pre_process(data_dir, pickle_dir=None, load=False):
 
 
 if __name__ == '__main__':
-    import directory_table
+    from kaggleProjects import directory_table
+
     data_path, pkl_dir = directory_table.get_paths(station='Windows')
     train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_path,
                                                                                        pickle_dir=pkl_dir,

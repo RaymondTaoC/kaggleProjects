@@ -1,14 +1,8 @@
 from __future__ import print_function
 import h2o
-import directory_table
-import numpy as np
-from h2o.estimators.random_forest import H2ORandomForestEstimator
-from h2o.estimators.gbm import H2OGradientBoostingEstimator
-from h2o.estimators.glm import H2OGeneralizedLinearEstimator
+from kaggleProjects import directory_table
 from h2o.estimators.xgboost import H2OXGBoostEstimator
-from h2o.estimators.deeplearning import H2ODeepLearningEstimator
 from h2o.grid.grid_search import H2OGridSearch
-from h2o.estimators.pca import H2OPrincipalComponentAnalysisEstimator
 
 _, data_path = directory_table.get_paths("Windows")
 
