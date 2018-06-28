@@ -312,7 +312,8 @@ def pre_process(data_dir, pickle_dir=None, load=False):
 
 
 if __name__ == '__main__':
-    data_path, pkl_dir = directory_table.get_paths(station='Subgraph')
+    import directory_table
+    data_path, pkl_dir = directory_table.get_paths(station='Windows')
     train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_path,
                                                                                        pickle_dir=pkl_dir,
                                                                                        load=True)
@@ -321,7 +322,7 @@ if __name__ == '__main__':
     X_train, X_valid, y_train, y_valid = train_test_split(train_df, target, test_size=0.1, random_state=2,
                                                           stratify=target[:, 0])
 
-    len_train = len(X_train)
+    len_train = len(train_df)
 
     # Fixed graph parameters
     # EMBEDDING_SIZE = 3  # Use cardinality / 2 instead
