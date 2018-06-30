@@ -5,11 +5,12 @@ from h2o.estimators.gbm import H2OGradientBoostingEstimator
 from h2o.estimators.xgboost import H2OXGBoostEstimator
 from h2o.grid.grid_search import H2OGridSearch
 from kaggleProjects.DefaultRisk.DataWrapper import HomeCreditDataWrapper
+from h2o.exceptions import H2OResponseError
 import logging
 import pandas as pd
 
 # Import directories
-paths = get_paths(station='Subgraph')
+paths = get_paths(station='Windows')
 data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
 h2o_rand_dir, log_dir = paths['h2o_rand_search'], paths['logs']
 
@@ -61,15 +62,11 @@ def save_model_list(model_lst, name):
         h2o.save_model(model=model, path=score_path, force=True)
 
 
-data = HomeCreditDataWrapper(data_dir, pkl_dir, n_rows=100)
-data.manage_na()
-data.data_set.to_csv(index=False, path_or_buf=pkl_dir + "/imputed_train.csv")
-
 meta = pd.read_pickle(pkl_dir + '/meta_df.pkl')
 
 h2o.init(min_mem_size_GB=5, nthreads=1)
 logger.info("Started new H2o session " + str(h2o.cluster().cloud_name))
-credit_data = h2o.upload_file(pkl_dir + "/imputed_train.csv")
+credit_data = h2o.upload_file(pkl_dir + "/train_imp_na_df.csv")
 logger.info("Loaded data into cluster")
 
 # Grid searching parameters
@@ -140,23 +137,255 @@ save_model_list(name="GBM", model_lst=gbm_grid_res[:GBM_MODELS_TO_COLLECT])
 del search_space, search_criteria, gbm_grid, gbm_grid_res
 """
 
-# Random set of XGB
+# Random set of XGB (non-windows)
+"""
+"""
 search_space = {'learn_rate': [0.01, 0.001],
                 'ntrees': [1]}
 search_criteria = {'strategy': 'RandomDiscrete', 'max_models': XGB_MODELS, 'seed': seed}
-xgb_grid = H2OGridSearch(model=H2OXGBoostEstimator(dmatrix_type="sparse"),
+xgb_grid = H2OGridSearch(model=H2OXGBoostEstimator,
                          grid_id='xgb_grid',
                          hyper_params=search_space,
                          search_criteria=search_criteria)
 logger.info("Training XGB models ...")
-xgb_grid.train(x=X, y=Y, nfolds=folds, seed=seed, training_frame=credit_data)
-logger.info("Finished training xgb models.")
-# Get the grid results, sorted
-xgb_grid_res = xgb_grid.get_grid(sort_by='auc', decreasing=True)
-log_training_results(logger, results=xgb_grid_res,
-                     search_grid=search_space, name="xgb",
-                     worst_model_index=XGB_MODELS_TO_COLLECT)
-best_models += xgb_grid_res[:XGB_MODELS_TO_COLLECT]
-save_model_list(name="xgb", model_lst=xgb_grid_res[:XGB_MODELS_TO_COLLECT])
+xgb_grid_res = None
+try:
+    xgb_grid.train(x=X, y=Y, nfolds=folds, seed=seed, training_frame=credit_data)
+    logger.info("Finished training xgb models.")
+    # Get the grid results, sorted
+    xgb_grid_res = xgb_grid.get_grid(sort_by='auc', decreasing=True)
+    log_training_results(logger, results=xgb_grid_res,
+                         search_grid=search_space, name="xgb",
+                         worst_model_index=XGB_MODELS_TO_COLLECT)
+    best_models += xgb_grid_res[:XGB_MODELS_TO_COLLECT]
+    save_model_list(name="xgb", model_lst=xgb_grid_res[:XGB_MODELS_TO_COLLECT])
+except H2OResponseError:
+    logger.error("Server failed to respond when training xgboost. Ignore if this is a Windows OS.")
+
 del search_space, search_criteria, xgb_grid, xgb_grid_res
+
+# Random ser of DRF
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 h2o.cluster().shutdown()

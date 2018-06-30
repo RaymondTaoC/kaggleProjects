@@ -1,6 +1,5 @@
-# Subgraph
 SUBGRAPH_PATH = '/home/user/Documents/Kaggle/CreditDefaultRisk/'
-WINDOWS_PATH = '/home/user/Documents/Kaggle/CreditDefaultRisk/'
+WINDOWS_PATH = 'C:/Users/dean_/.kaggle/competitions/home-credit-default-risk/'
 
 _file_systems = {
     "Subgraph": {
@@ -14,7 +13,8 @@ _file_systems = {
         'path': WINDOWS_PATH,
         'h2o_rand_search': WINDOWS_PATH + 'H2oRandSearchModels',
         'data_dir': WINDOWS_PATH + 'RawData',
-        'pkl_dir': WINDOWS_PATH + 'NN-pkl'
+        'pkl_dir': WINDOWS_PATH + 'NN-pkl',
+        'logs': WINDOWS_PATH + 'Logs'
     }
 }
 

@@ -124,7 +124,7 @@ def process_dataframe(input_df, encoder_dict=None):
     return input_df, categorical_feats.tolist(), encoder_dict
 
 
-paths = get_paths(station='Subgraph')
+paths = get_paths(station='Windows')
 data_dir, pickle_dir = paths['data_dir'], paths['pkl_dir']
 
 print('Input files:\n{}'.format(os.listdir(data_dir)))
@@ -145,8 +145,10 @@ app_train_df.head()
 # Merge the datasets into a single one for training
 len_train = len(app_train_df)
 app_both = pd.concat([app_train_df, app_test_df], sort=True)
+del app_train_df, app_test_df
 merged_df = feature_engineering(app_both, bureau_df, bureau_balance_df, credit_card_df,
                                 pos_cash_df, prev_app_df, install_df)
+del bureau_df, bureau_balance_df, credit_card_df, pos_cash_df, prev_app_df, install_df
 # Separate metadata
 meta_cols = ['SK_ID_CURR', 'SK_ID_BUREAU', 'SK_ID_PREV']
 meta_df = merged_df[meta_cols]
@@ -237,7 +239,11 @@ training_df = merged_df[:len_train]
 predicting_df = merged_df[len_train:]
 gc.collect()
 
+combined_imp_na_df = pd.DataFrame(data=training_df, columns=final_col_names)
+combined_imp_na_df['TARGET'] = target[:, 1]
+
 # Save important data to files
+combined_imp_na_df.to_csv(pickle_dir + '/train_imp_na_df.csv', index=False)  # USABLE BY H2O
 np.save(pickle_dir + '/train_imputed_df.npy', training_df)
 combined_na_df.to_csv(pickle_dir + '/train_with_na.csv', index=False)
 np.save(pickle_dir + '/predict_df.npy', predicting_df)
