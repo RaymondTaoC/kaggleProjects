@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.model_selection import GridSearchCV  # Performing grid search
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV  # Performing grid search
 
 
 def _fix_constant_params(p_dict):
@@ -34,30 +34,41 @@ def _decimal_place(value):
     return -i
 
 
+def grid_search_factory(search_type):
+    assert search_type in {"complete", "random"}, "'search_type' must be either 'complete', " \
+                                                  "to try all possibilities or 'random', for" \
+                                                  "a faster random selection."
+    if search_type == 'random':
+        return GridSearchCV
+    else:
+        return RandomizedSearchCV
+
+
 def sequential_search(classifier_algo, classifier_algo_param_dict, param_group,
-                      train, predictors, target, scoring,
+                      train, predictors, target, scoring, search_type='complete',
                       n_jobs=1, folds=5, verbose=False):
     assert isinstance(train, pd.DataFrame), "Parameter 'train' must be a pandas data-frame."
 
-    # Constant grid search params
-    iid = False
-
-    optimals = {}
+    grid_search_algo = grid_search_factory(search_type)
+    grid_search = None
+    optimal_params = {}
     i = 0
     for param_set in param_group:
-        test_params = _fix_constant_params({**optimals, **param_set})
+        test_params = _fix_constant_params({**optimal_params, **param_set})
         classifier = classifier_algo(**classifier_algo_param_dict)
-        grid_search = GridSearchCV(estimator=classifier, param_grid=test_params, scoring=scoring,
-                                   n_jobs=n_jobs, iid=iid, cv=folds, verbose=verbose)
+        grid_search = grid_search_algo(classifier, test_params, scoring=scoring,
+                                       n_jobs=n_jobs, iid=False, cv=folds, verbose=verbose)
         grid_search.fit(train[predictors], train[target])
-        optimals = {**optimals, **grid_search.best_params_}
+        optimal_params = {**optimal_params, **grid_search.best_params_}
 
         if verbose:
             print("First grid search yields:\nBest Params:\n\t{}\nBest Score\n\t{}" \
                   .format(grid_search.best_params_, grid_search.best_score_))
 
-            print("Iteration: {}\nTest Prams:\t{}\nOptimal:\t{}\nBest:\t{}\n\n"\
-                  .format(i, test_params, optimals, grid_search.best_params_))
+            print("Iteration: {}\nTest Prams:\t{}\nOptimal:\t{}\
+            nBest:\t{}\n\n"\
+                  .format(i, test_params, optimal_params, grid_search.best_params_))
         del classifier, grid_search
         i += 1
-    return optimals
+    return optimal_params, grid_search.best_score_
+

@@ -6,12 +6,12 @@ and xgboost.
 from tpot import TPOTClassifier
 from sklearn.model_selection import train_test_split
 import numpy as np
+from kaggleProjects.directory_table import get_paths
 
 seed = 321
 
-pkl_dir = r'C:\Users\dean_\.kaggle\competitions\home-credit-default-risk\NN-pkl'
-# pkl_dir = '/home/user/Documents/Kaggle/CreditDefaultRisk/EngineeredData'
-# _, pkl_dir = directory_table.get_paths(station='Subgraph')
+paths = get_paths(station='Subgraph')
+data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
 train_df = np.load(pkl_dir + r'\train_df.npy')
 target = np.load(pkl_dir + r'\target.npy')
 predicting_df = np.load(pkl_dir + r'\predict_df.npy')

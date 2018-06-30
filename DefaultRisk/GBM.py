@@ -3,8 +3,8 @@ from lightgbm import LGBMClassifier
 from kaggleProjects.directory_table import get_paths
 from kaggleProjects.SequentialParamSearch import sequential_search
 
-
-data_dir, pkl_dir = get_paths(station='Subgraph')
+paths = get_paths(station='Subgraph')
+data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
 app_train_df = pd.read_csv(data_dir + '/application_train.csv')
 len_train = len(app_train_df)
 del app_train_df

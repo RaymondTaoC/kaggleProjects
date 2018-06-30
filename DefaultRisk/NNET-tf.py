@@ -312,10 +312,11 @@ def pre_process(data_dir, pickle_dir=None, load=False):
 
 
 if __name__ == '__main__':
-    from kaggleProjects import directory_table
+    from kaggleProjects.directory_table import get_paths
 
-    data_path, pkl_dir = directory_table.get_paths(station='Windows')
-    train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_path,
+    paths = get_paths(station='Subgraph')
+    data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
+    train_df, predict_df, target, cont_feats_idx, cat_feats_idx, meta_df = pre_process(data_dir,
                                                                                        pickle_dir=pkl_dir,
                                                                                        load=True)
 
@@ -537,4 +538,4 @@ if __name__ == '__main__':
 
     plt.show()
     out_df = pd.DataFrame({'SK_ID_CURR': meta_df['SK_ID_CURR'][len_train:], 'TARGET': y_prob[:, 1]})
-    out_df.to_csv('nn_submission.csv', index=False)
+    out_df.to_csv('kaggleProjects/DefaultRisk/submissions/nn_submission.csv', index=False)

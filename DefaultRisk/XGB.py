@@ -5,7 +5,8 @@ from kaggleProjects.SequentialParamSearch import sequential_search, refined_lowe
 
 
 if __name__ == "__main__":
-    data_dir, pkl_dir = get_paths(station='Subgraph')
+    paths = get_paths(station='Subgraph')
+    data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
     app_train_df = pd.read_csv(data_dir + '/application_train.csv')
     len_train = len(app_train_df)
     del app_train_df
