@@ -2,17 +2,24 @@ import h2o.estimators as algos
 from math import log
 from numpy import linspace
 
-WORK_STATION = 'Windows'
+WORK_STATION = 'Subgraph'
 TRAIN_ROWS = 307511
 CV_FOLDS = 5
-MAX_RUNTIME_MINUTES = 60  # Max search time for each estimator
+MAX_RUNTIME_MINUTES = 2  # Max search time for each estimator
+
+H2O_INIT_SETTINGS = {
+    "min_mem_size_GB": 5,
+    "nthreads": 3,
+    "enable_assertions": False
+}
+
 # Models to include
-INCLUDE_GBM = True
-INCLUDE_XGB = True
-INCLUDE_DEEP = True
-INCLUDE_RF = True
+INCLUDE_GBM = False  # 2 models/hour
+INCLUDE_XGB = False
+INCLUDE_DEEP = False  # 1 model/hour
+INCLUDE_RF = False   # 2 models/hour
 INCLUDE_NAIVE_BAYES = False
-INCLUDE_GLM = True
+INCLUDE_GLM = True  # 6 models/hour
 
 # Reference: https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/tutorials/gbm/gbmTuning.Rmd
 GBM_SETTINGS = {
@@ -34,6 +41,7 @@ GBM_SETTINGS = {
         # early stopping once the validation AUC doesn't improve by at least 0.01% for 5 consecutive scoring events
         'stopping_rounds': 5, 'stopping_tolerance': 1e-4, 'stopping_metric': "AUC"
     },
+
     'param_space': {
         'max_depth': list(range(5, 29)),
         'sample_rate': [0.2 + (0.01 * i) for i in range(1, 81)],
@@ -56,19 +64,21 @@ XGB_SETTINGS = {
     'n_models': 100,
     'save_num': 10,
     'rand_seed': 123,
-    
+
     'const_params': {
         'ntrees': 1000,
         'max_runtime_secs': 3600,
         'seed': 123,
         'distribution': 'bernoulli'
     },
-    'param_space': {'learn_rate': [i/1000 for i in range(2, 11)],
-                    'sample_rate': [0.5 + (i/100) for i in range(0, 51)],
-                    'col_sample_rate': [0.4 + (i/100) for i in range(0, 61, 2)],
-                    'max_abs_leafnode_pred': [0, 1, 2, 3],
-                    'max_depth': list(range(4, 11))
-                    }
+
+    'param_space': {
+        'learn_rate': [i / 1000 for i in range(2, 11)],
+        'sample_rate': [0.5 + (i / 100) for i in range(0, 51)],
+        'col_sample_rate': [0.4 + (i / 100) for i in range(0, 61, 2)],
+        'max_abs_leafnode_pred': [0, 1, 2, 3],
+        'max_depth': list(range(4, 11))
+    }
 }
 
 DEEP_SETTINGS = {
@@ -77,7 +87,7 @@ DEEP_SETTINGS = {
     'n_models': 50,
     'save_num': 5,
     'rand_seed': 123,
-    
+
     'const_params': {
         'adaptive_rate': False,
         'rate': 0.01,
@@ -86,13 +96,15 @@ DEEP_SETTINGS = {
         'seed': 123,
         'stopping_metric': 'auc',
         'max_runtime_secs': 3600,
-        'mini_batch_size': 300
+        'mini_batch_size': 300,
+        'epochs': 40
     },
-    'param_space': {'hidden': [[200, 200], [200, 200, 200], [250, 240, 230]],
-                    'input_dropout_ratio': [0, 0.1, 0.2],
-                    'loss': ['Absolute', 'Quadratic', 'Huber', 'CrossEntropy'],
-                    'epochs': list(range(10, 101, 20)),
-                    'activation': ['tanh_with_dropout', 'rectifier_with_dropout', 'rectifier']}
+
+    'param_space': {
+        'hidden': [[200, 200], [200, 200, 200], [250, 240, 230]],
+        'input_dropout_ratio': [0, 0.1, 0.2],
+        'loss': ['Quadratic', 'ModifiedHuber', 'CrossEntropy'],
+        'activation': ['tanh_with_dropout', 'rectifier_with_dropout', 'rectifier']}
 }
 
 # Reference:
@@ -104,7 +116,7 @@ RF_SETTINGS = {
     'n_models': 100,
     'save_num': 10,
     'rand_seed': 123,
-    
+
     'const_params': {
         'stopping_metric': 'auc',
         'stopping_rounds': 3,
@@ -112,6 +124,7 @@ RF_SETTINGS = {
         'seed': 123,
         'max_runtime_secs': 3600
     },
+
     'param_space': {
         'histogram_type': ['UniformAdaptive', 'Random', 'QuantilesGlobal', 'RoundRobin'],
         # Number of trees in random forest
@@ -133,13 +146,13 @@ NAI_BAYES_SETTINGS = {
     'n_models': 4,
     'save_num': 2,
     'rand_seed': 123,
-    
+
     'const_params': {
         'max_runtime_secs': 10 * 60,
         'seed': 123
     },
     'param_space': {
-                    'laplace': [0, 1, 2, 3]}
+        'laplace': [0, 1, 2, 3]}
 }
 
 GLM_SETTINGS = {
@@ -148,7 +161,7 @@ GLM_SETTINGS = {
     'n_models': 100,
     'save_num': 10,
     'rand_seed': 123,
-    
+
     'const_params': {
         'family': 'binomial',
         'lambda_search': True,

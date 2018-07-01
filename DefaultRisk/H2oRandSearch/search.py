@@ -1,35 +1,21 @@
 from __future__ import print_function
 import h2o
 from kaggleProjects.directory_table import get_paths
+from kaggleProjects.logger_factory import get_logger
 from h2o.estimators.xgboost import H2OXGBoostEstimator
 from h2o.grid.grid_search import H2OGridSearch
-import logging
 import platform
 import kaggleProjects.DefaultRisk.H2oRandSearch.config as config
 from h2o.exceptions import H2OResponseError
 import pandas as pd
 
+
 # Import directories
 paths = get_paths(station=config.WORK_STATION)
 data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
 h2o_rand_dir, log_dir = paths['h2o_rand_search'], paths['logs']
-
-# Implemented logging since the H2O console outputs and logging gives too much information.
-logger = logging.getLogger('H2O_random_search')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler(log_dir + '/H2oRandSearch.log')
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('[%(levelname)s][%(asctime)s]: %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh)
-logger.addHandler(ch)
+# Get new logger
+logger = get_logger('H2oRandSearch', log_dir)
 
 
 def best_found_params(param_grid, model_params):
@@ -39,7 +25,13 @@ def best_found_params(param_grid, model_params):
     return found_params
 
 
-def log_training_results(_logger, results, worst_model_index, search_grid, name):
+def get_model_cv_metric(model, metric):
+    cv_summary = model.cross_validation_metrics_summary().as_data_frame()
+    scores = cv_summary.loc[cv_summary[''] == metric]
+    return scores['mean'][1]
+
+
+def log_training_results(_logger, results, worst_model_index, search_grid, name, scring_metric):
     best_mod = results[0]
     worst_model_index = min(worst_model_index, len(results) - 1)
     worst_mod = results[worst_model_index]
@@ -47,12 +39,14 @@ def log_training_results(_logger, results, worst_model_index, search_grid, name)
     logger_entry = \
         """
     {} Grid Search Results of the {} collected:
-    \tBest Collected Model Score:\t{}
-    \tWorst Collected Model Score:\t{}
+    \tBest Collected Model {}:\t{}
+    \tWorst Collected Model {}:\t{}
     \tBest Model Params (non listed params are left as their default)
     \t{}""".format(name, len(results),
-                   best_mod.auc(),
-                   worst_mod.auc(),
+                   scring_metric,
+                   get_model_cv_metric(best_mod, scring_metric),
+                   scring_metric,
+                   get_model_cv_metric(worst_mod, scring_metric),
                    best_mod_found_params)
     _logger.info(logger_entry)
 
@@ -72,43 +66,44 @@ def random_h2o_model_search(name, param_space, estimator, rand_seed,
         print(incompatible_message)
         return
     assert save_num < n_models, "Cannot save more models than the number of models to be trained."
-    criteria = {'strategy': 'RandomDiscrete',
-                'max_models': n_models,
-                'seed': rand_seed,
-                # limit the runtime to 60 minutesS
-                'max_runtime_secs': config.MAX_RUNTIME_MINUTES * 60,
-                # early stopping once the leaderboard of the top 5 models is converged to 0.1% relative difference
-                'stopping_rounds': 5,
-                'stopping_metric': "AUC",
-                'stopping_tolerance': 1e-3
-                }
+    criteria = {
+        'strategy': 'RandomDiscrete',
+        'max_models': n_models,
+        'seed': rand_seed,
+        # limit the runtime to 60 minutesS
+        'max_runtime_secs': config.MAX_RUNTIME_MINUTES * 60,
+        # early stopping once the leaderboard of the top 5 models is converged to 0.1% relative difference
+        'stopping_rounds': 5,
+        'stopping_metric': "AUC",
+        'stopping_tolerance': 1e-3
+    }
+    # Required for H2OStackedEnsembleEstimator
     const_params.update({'keep_cross_validation_predictions': True, 'fold_assignment': "Modulo"})
     grid = H2OGridSearch(model=estimator(**const_params),
                          grid_id=name + '_grid',
                          hyper_params=param_space,
                          search_criteria=criteria)
     logger.info("Training {} models ...".format(name))
-    grid.train(x=X, y=Y, nfolds=config.CV_FOLDS, seed=rand_seed, training_frame=credit_data)
-    # try:
-    #     grid.train(x=X, y=Y, nfolds=config.CV_FOLDS, seed=rand_seed, training_frame=credit_data)
-    # except H2OResponseError:
-    #     logger.error('Encountered server error. Skipping ' + name)
-    #     return
+    # grid.train(x=X, y=Y, nfolds=config.CV_FOLDS, seed=rand_seed, training_frame=credit_data)
+    try:
+        grid.train(x=X, y=Y, nfolds=config.CV_FOLDS, seed=rand_seed, training_frame=credit_data)
+    except H2OResponseError:
+        logger.error('Encountered server error. Skipping ' + name)
+        return
     logger.info("Finished training {} models.".format(name))
     # Get the grid results, sorted
-    results = grid.get_grid(sort_by='auc',
-                            decreasing=True
-                            )
+    results = grid.get_grid(sort_by='auc', decreasing=True)
     log_training_results(logger, results=results,
                          search_grid=param_space, name=name,
-                         worst_model_index=save_num)
+                         worst_model_index=save_num,
+                         scring_metric='auc')
     save_model_list(name=name, model_lst=results[:save_num], seed=rand_seed)
 
 
 if __name__ == "__main__":
     meta = pd.read_pickle(pkl_dir + '/meta_df.pkl')
 
-    h2o.init(min_mem_size_GB=5, nthreads=3, enable_assertions=False)
+    h2o.init(**config.H2O_INIT_SETTINGS)
     logger.info("Started new H2o session " + str(h2o.cluster().cloud_name))
     credit_data = h2o.upload_file(pkl_dir + "/train_imp_na_df.csv")
     logger.info("Loaded data into cluster")
@@ -117,6 +112,7 @@ if __name__ == "__main__":
     X = set(credit_data.columns) - {'TARGET'} - set(meta.columns)
     Y = 'TARGET'
     credit_data[Y] = credit_data[Y].asfactor()
+    del meta
 
     if config.INCLUDE_GBM:
         random_h2o_model_search(**config.GBM_SETTINGS)
