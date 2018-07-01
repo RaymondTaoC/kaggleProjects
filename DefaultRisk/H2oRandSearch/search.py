@@ -41,15 +41,16 @@ def best_found_params(param_grid, model_params):
 
 def log_training_results(_logger, results, worst_model_index, search_grid, name):
     best_mod = results[0]
+    worst_model_index = min(worst_model_index, len(results) - 1)
     worst_mod = results[worst_model_index]
     best_mod_found_params = best_found_params(search_grid, best_mod.params)
     logger_entry = \
         """
-    {} Grid Search Results:
+    {} Grid Search Results of the {} collected:
     \tBest Collected Model Score:\t{}
     \tWorst Collected Model Score:\t{}
     \tBest Model Params (non listed params are left as their default)
-    \t{}""".format(name,
+    \t{}""".format(name, len(results),
                    best_mod.auc(),
                    worst_mod.auc(),
                    best_mod_found_params)
@@ -107,7 +108,7 @@ def random_h2o_model_search(name, param_space, estimator, rand_seed,
 if __name__ == "__main__":
     meta = pd.read_pickle(pkl_dir + '/meta_df.pkl')
 
-    h2o.init(min_mem_size_GB=5, nthreads=1)
+    h2o.init(min_mem_size_GB=5, nthreads=3, enable_assertions=False)
     logger.info("Started new H2o session " + str(h2o.cluster().cloud_name))
     credit_data = h2o.upload_file(pkl_dir + "/train_imp_na_df.csv")
     logger.info("Loaded data into cluster")

@@ -2,17 +2,17 @@ import h2o.estimators as algos
 from math import log
 from numpy import linspace
 
-WORK_STATION = 'Subgraph'
+WORK_STATION = 'Windows'
 TRAIN_ROWS = 307511
 CV_FOLDS = 5
 MAX_RUNTIME_MINUTES = 60  # Max search time for each estimator
 # Models to include
-INCLUDE_GBM = False
-INCLUDE_XGB = False
-INCLUDE_DEEP = False
+INCLUDE_GBM = True
+INCLUDE_XGB = True
+INCLUDE_DEEP = True
 INCLUDE_RF = True
 INCLUDE_NAIVE_BAYES = False
-INCLUDE_GLM = False
+INCLUDE_GLM = True
 
 # Reference: https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/tutorials/gbm/gbmTuning.Rmd
 GBM_SETTINGS = {
@@ -74,8 +74,8 @@ XGB_SETTINGS = {
 DEEP_SETTINGS = {
     'name': "DEEP",
     'estimator': algos.deeplearning.H2ODeepLearningEstimator,
-    'n_models': 3,
-    'save_num': 2,
+    'n_models': 50,
+    'save_num': 5,
     'rand_seed': 123,
     
     'const_params': {
@@ -101,8 +101,8 @@ DEEP_SETTINGS = {
 RF_SETTINGS = {
     'name': "RAND_FOREST",
     'estimator': algos.random_forest.H2ORandomForestEstimator,
-    'n_models': 3,
-    'save_num': 2,
+    'n_models': 100,
+    'save_num': 10,
     'rand_seed': 123,
     
     'const_params': {
@@ -143,7 +143,7 @@ NAI_BAYES_SETTINGS = {
 }
 
 GLM_SETTINGS = {
-    'name': "Linear/logistic",
+    'name': "Linear-logistic",
     'estimator': algos.glm.H2OGeneralizedLinearEstimator,
     'n_models': 100,
     'save_num': 10,
