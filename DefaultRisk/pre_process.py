@@ -124,7 +124,7 @@ def process_dataframe(input_df, encoder_dict=None):
     return input_df, categorical_feats.tolist(), encoder_dict
 
 
-paths = get_paths(station='Windows')
+paths = get_paths(station='Subgraph')
 data_dir, pickle_dir = paths['data_dir'], paths['pkl_dir']
 
 print('Input files:\n{}'.format(os.listdir(data_dir)))
