@@ -158,12 +158,12 @@ def embed_and_attach(X, X_cat, cardinality):
 
 def load_pickle(pickle_dir):
     assert isinstance(pickle_dir, str), "'pickle_dir' argument must be a string."
-    _training_df = np.load(pickle_dir + r'\train_df.npy')
-    _predicting_df = np.load(pickle_dir + r'\predict_df.npy')
-    _target = np.load(pickle_dir + r'\target.npy')
-    _cont_feats_idx = np.load(pickle_dir + r'\cont_feats_idx.npy')
-    _cat_feats_idx = np.load(pickle_dir + r'\cat_feats_idx.npy')
-    _meta_df = pd.read_pickle(pickle_dir + r'\meta_df.pkl')
+    _training_df = np.load(pickle_dir + '/train_df.npy')
+    _predicting_df = np.load(pickle_dir + '/predict_df.npy')
+    _target = np.load(pickle_dir + '/target.npy')
+    _cont_feats_idx = np.load(pickle_dir + '/cont_feats_idx.npy')
+    _cat_feats_idx = np.load(pickle_dir + '/cat_feats_idx.npy')
+    _meta_df = pd.read_pickle(pickle_dir + '/meta_df.pkl')
     return _training_df, _predicting_df, _target, _cont_feats_idx, _cat_feats_idx, _meta_df
 
 
@@ -300,13 +300,13 @@ def pre_process(data_dir, pickle_dir=None, load=False):
     gc.collect()
 
     if pickle_dir:
-        np.save(pickle_dir + r'\train_df.npy', training_df)
-        combined_df.to_csv(pickle_dir + r'\train.csv', index=False)
-        np.save(pickle_dir + r'\predict_df.npy', predicting_df)
-        meta_df.to_pickle(pickle_dir + r'\meta_df.pkl')
-        np.save(pickle_dir + r'\target.npy', target)
-        np.save(pickle_dir + r'\cont_feats_idx.npy', cont_feats_idx)
-        np.save(pickle_dir + r'\cat_feats_idx.npy', cat_feats_idx)
+        np.save(pickle_dir + '/train_df.npy', training_df)
+        combined_df.to_csv(pickle_dir + '/train.csv', index=False)
+        np.save(pickle_dir + '/predict_df.npy', predicting_df)
+        meta_df.to_pickle(pickle_dir + '/meta_df.pkl')
+        np.save(pickle_dir + '/target.npy', target)
+        np.save(pickle_dir + '/cont_feats_idx.npy', cont_feats_idx)
+        np.save(pickle_dir + '/cat_feats_idx.npy', cat_feats_idx)
 
     return training_df, predicting_df, target, cont_feats_idx, cat_feats_idx, meta_df
 

@@ -7,14 +7,16 @@ _file_systems = {
         'h2o_rand_search': SUBGRAPH_PATH + 'H2oRandSearchModels',
         'data_dir': SUBGRAPH_PATH + 'RawDataSets',
         'pkl_dir': SUBGRAPH_PATH + 'EngineeredData',
-        'logs': SUBGRAPH_PATH + 'Logs'
+        'logs': SUBGRAPH_PATH + 'Logs',
+        'submissions': SUBGRAPH_PATH + 'Submissions'
     },
     "Windows": {
         'path': WINDOWS_PATH,
         'h2o_rand_search': WINDOWS_PATH + 'H2oRandSearchModels',
         'data_dir': WINDOWS_PATH + 'RawData',
         'pkl_dir': WINDOWS_PATH + 'NN-pkl',
-        'logs': WINDOWS_PATH + 'Logs'
+        'logs': WINDOWS_PATH + 'Logs',
+        'submissions': WINDOWS_PATH + 'Submissions'
     }
 }
 
