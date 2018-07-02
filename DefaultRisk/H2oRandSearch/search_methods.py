@@ -99,11 +99,11 @@ def random_h2o_model_search(name, param_space, estimator, rand_seed,
     save_model_list(name=name, model_lst=results[:save_num], seed=rand_seed, directory=model_directory)
 
 
-def run(config_path):
+def run(config_path, work_station):
     config = import_module(config_path)
 
     # Import directories
-    paths = get_paths(station=config.WORK_STATION)
+    paths = get_paths(station=work_station)
     data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
     h2o_rand_dir, log_dir = paths['h2o_rand_search'], paths['logs']
     # Get new logger

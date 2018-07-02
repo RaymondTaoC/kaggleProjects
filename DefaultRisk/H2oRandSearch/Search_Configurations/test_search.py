@@ -1,9 +1,6 @@
 import h2o.estimators as algos
-from math import log
-from numpy import linspace
 
-WORK_STATION = 'Subgraph'
-CV_FOLDS = 5
+CV_FOLDS = 2
 MAX_RUNTIME_MINUTES = 2  # Max search time for each estimator
 
 H2O_INIT_SETTINGS = {
@@ -13,11 +10,11 @@ H2O_INIT_SETTINGS = {
 }
 
 # Models to include
-INCLUDE_GBM = True  # 2 models/hour
-INCLUDE_XGB = True
-INCLUDE_DEEP = True  # 1 model/hour
-INCLUDE_RF = True   # 2 models/hour
-INCLUDE_NAIVE_BAYES = True
+INCLUDE_GBM = False  # 2 models/hour
+INCLUDE_XGB = False
+INCLUDE_DEEP = False  # 1 model/hour
+INCLUDE_RF = False   # 2 models/hour
+INCLUDE_NAIVE_BAYES = False
 INCLUDE_GLM = True  # 6 models/hour
 
 # Reference: https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/tutorials/gbm/gbmTuning.Rmd
