@@ -2,7 +2,7 @@ import h2o
 import pandas as pd
 from os import listdir
 from h2o.estimators.stackedensemble import H2OStackedEnsembleEstimator
-from kaggleProjects.DefaultRisk.H2oRandSearch import config
+from kaggleProjects.DefaultRisk.H2oRandSearch.Search_Configurations import config
 from kaggleProjects.directory_table import get_paths
 from kaggleProjects.logger_factory import get_logger
 
@@ -47,7 +47,8 @@ meta_algo_param = {
 ensemble = H2OStackedEnsembleEstimator(model_id="my_ensemble_binomial",
                                        base_models=ensemble_models,
                                        metalearner_params=meta_algo_param,
-                                       metalearner_algorithm='glm')
+                                       metalearner_algorithm='glm',
+                                       metalearner_fold_assignment='stratified')
 logger.info('Training Ensemble model...')
 ensemble.train(x=X, y=Y, training_frame=credit_data)
 logger.info('Completed training model')
