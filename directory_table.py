@@ -9,6 +9,7 @@ _file_systems = {
         'pkl_dir': SUBGRAPH_PATH + 'EngineeredData',
         'logs': SUBGRAPH_PATH + 'Logs',
         'submissions': SUBGRAPH_PATH + 'Submissions',
+        'h2o_cont_search': SUBGRAPH_PATH + 'H2oContSearchModels',
         'temp': SUBGRAPH_PATH + 'temp'
     },
     "Windows": {
@@ -18,6 +19,7 @@ _file_systems = {
         'pkl_dir': WINDOWS_PATH + 'NN-pkl',
         'logs': WINDOWS_PATH + 'Logs',
         'submissions': WINDOWS_PATH + 'Submissions',
+        'h2o_cont_search': WINDOWS_PATH + 'H2oContSearchModels',
         'temp': WINDOWS_PATH + 'temp'
     }
 }
