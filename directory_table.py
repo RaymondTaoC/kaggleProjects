@@ -8,7 +8,8 @@ _file_systems = {
         'data_dir': SUBGRAPH_PATH + 'RawDataSets',
         'pkl_dir': SUBGRAPH_PATH + 'EngineeredData',
         'logs': SUBGRAPH_PATH + 'Logs',
-        'submissions': SUBGRAPH_PATH + 'Submissions'
+        'submissions': SUBGRAPH_PATH + 'Submissions',
+        'temp': SUBGRAPH_PATH + 'temp'
     },
     "Windows": {
         'path': WINDOWS_PATH,
@@ -16,7 +17,8 @@ _file_systems = {
         'data_dir': WINDOWS_PATH + 'RawData',
         'pkl_dir': WINDOWS_PATH + 'NN-pkl',
         'logs': WINDOWS_PATH + 'Logs',
-        'submissions': WINDOWS_PATH + 'Submissions'
+        'submissions': WINDOWS_PATH + 'Submissions',
+        'temp': WINDOWS_PATH + 'temp'
     }
 }
 

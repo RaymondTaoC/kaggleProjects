@@ -2,6 +2,7 @@ import h2o.estimators as algos
 
 CV_FOLDS = 2
 MAX_RUNTIME_MINUTES = 2  # Max search time for each estimator
+SAVE_DIR = 'C:/Users/dean_/.kaggle/competitions/home-credit-default-risk/temp'
 
 H2O_INIT_SETTINGS = {
     "min_mem_size_GB": 5,
@@ -10,10 +11,10 @@ H2O_INIT_SETTINGS = {
 }
 
 # Models to include
-INCLUDE_GBM = False  # 2 models/hour
-INCLUDE_XGB = False
-INCLUDE_DEEP = False  # 1 model/hour
-INCLUDE_RF = False   # 2 models/hour
+INCLUDE_GBM = True  # 2 models/hour
+INCLUDE_XGB = True
+INCLUDE_DEEP = True  # 1 model/hour
+INCLUDE_RF = True   # 2 models/hour
 INCLUDE_NAIVE_BAYES = False
 INCLUDE_GLM = True  # 6 models/hour
 

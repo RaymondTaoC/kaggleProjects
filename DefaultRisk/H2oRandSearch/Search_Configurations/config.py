@@ -2,7 +2,7 @@ import h2o.estimators as algos
 from math import log
 from numpy import linspace
 
-WORK_STATION = 'Subgraph'
+WORK_STATION = 'Windows'
 TRAIN_ROWS = 307511
 CV_FOLDS = 5
 MAX_RUNTIME_MINUTES = 2  # Max search time for each estimator

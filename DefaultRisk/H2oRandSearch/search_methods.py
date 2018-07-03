@@ -83,12 +83,12 @@ def random_h2o_model_search(name, param_space, estimator, rand_seed,
                          hyper_params=param_space,
                          search_criteria=criteria)
     logger.info("Training {} models ...".format(name))
-    # grid.train(x=X, y=Y, nfolds=configuration.CV_FOLDS, seed=rand_seed, training_frame=credit_data)
-    try:
-        grid.train(x=X, y=Y, training_frame=training_frame)
-    except H2OResponseError:
-        logger.error('Encountered server error. Skipping ' + name)
-        return
+    grid.train(x=X, y=Y, nfolds=configuration.CV_FOLDS, seed=rand_seed, training_frame=training_frame)
+    # try:
+    #     grid.train(x=X, y=Y, training_frame=training_frame)
+    # except H2OResponseError:
+    #     logger.error('Encountered server error. Skipping ' + name)
+    #     return
     logger.info("Finished training {} models.".format(name))
     # Get the grid results, sorted
     results = grid.get_grid(sort_by='auc', decreasing=True)
@@ -105,7 +105,7 @@ def run(config_path, work_station):
     # Import directories
     paths = get_paths(station=work_station)
     data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
-    h2o_rand_dir, log_dir = paths['h2o_rand_search'], paths['logs']
+    h2o_rand_dir, log_dir = config.SAVE_DIR, paths['logs']
     # Get new logger
     logger = get_logger('H2oRandSearch', log_dir)
 

@@ -29,14 +29,17 @@ ensemble_models = load_models_from_dir(h2o_rand_dir)
 meta = pd.read_pickle(pkl_dir + '/meta_df.pkl')
 logger.info("Started new H2o session " + str(h2o.cluster().cloud_name))
 credit_data = h2o.upload_file(pkl_dir + "/train_imp_na_df.csv")
-predict_me = h2o.upload_file(pkl_dir + '/predict_df.npy')
+predict_me = h2o.upload_file(pkl_dir + '/test_imp_na_df.csv')
 logger.info("Loaded data into cluster")
 
 # Grid searching parameters
 X = set(credit_data.columns) - {'TARGET'} - set(meta.columns)
 Y = 'TARGET'
-credit_data[Y] = credit_data[Y].asfactor()
 del meta
+
+predict_me.drop('C1')
+predict_me[Y] = predict_me[Y].asfactor()
+credit_data[Y] = credit_data[Y].asfactor()
 
 meta_algo_param = {
     'family': 'binomial',
