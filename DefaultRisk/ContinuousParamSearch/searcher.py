@@ -11,16 +11,16 @@ class BaseRandomSearch:
         self.logger = logger
 
     @abstractmethod
-    def search(self, score_cutoff, param_space, estimator,
+    def search(self, score_cutoff, param_space,
                rand_seed, n_models,
                const_params, cv_folds, training_frame,
                model_directory, predictors, response):
         pass
 
     @abstractmethod
-    def log_training_results(self, results, search_grid):
+    def _log_training_results(self, results, search_grid):
         pass
 
     @abstractmethod
-    def save_model_list(self, model_lst, directory, seed):
+    def _save_models(self, models, directory):
         pass

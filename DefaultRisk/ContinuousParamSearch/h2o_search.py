@@ -7,8 +7,8 @@ from platform import platform
 import h2o
 import argparse
 from pandas import read_pickle
-from directory_table import get_paths
-from logger_factory import get_logger
+from ...directory_table import get_paths
+from ...logger_factory import get_logger
 from importlib import import_module
 
 

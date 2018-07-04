@@ -10,6 +10,7 @@ _file_systems = {
         'logs': SUBGRAPH_PATH + 'Logs',
         'submissions': SUBGRAPH_PATH + 'Submissions',
         'h2o_cont_search': SUBGRAPH_PATH + 'H2oContSearchModels',
+	'lgbm_cont_search': SUBGRAPH_PATH + 'LgbmContSearchModels',
         'temp': SUBGRAPH_PATH + 'temp'
     },
     "Windows": {
@@ -20,6 +21,7 @@ _file_systems = {
         'logs': WINDOWS_PATH + 'Logs',
         'submissions': WINDOWS_PATH + 'Submissions',
         'h2o_cont_search': WINDOWS_PATH + 'H2oContSearchModels',
+	'lgbm_cont_search': WINDOWS_PATH + 'LgbmContSearchModels',
         'temp': WINDOWS_PATH + 'temp'
     }
 }

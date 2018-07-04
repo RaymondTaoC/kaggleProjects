@@ -20,7 +20,7 @@ GRID_SEARCH_SETTINGS = {
     'rand_seed': 123,
     'const_params': {
         'score_tree_interval': 10,  # makes early stopping reproducible (it depends on the scoring interval)
-        'ntrees': 1,  # more trees is better if the learning rate is small enough; use "more than enough" trees
+        'ntrees': 1,  # more trees  ais better if the learning rate is small enough; use "more than enough" trees
         # since we have early stopping
         'learn_rate': 0.05,  # smaller learning rate is better; since we have learning_rate_annealing, we can afford
         # to start with a bigger learning rate
