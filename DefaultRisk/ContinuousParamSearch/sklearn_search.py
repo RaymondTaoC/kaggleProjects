@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-c', help='configuration file (python script in Search_Configurations)')
 parser.add_argument('-s', help='work station registered in kaggleProjects.directory_table.py')
 args = parser.parse_args()
+args.c, args.s = 'skl_gbm_config', 'Windows'
 config = import_module('Search_Configurations.' + args.c)
 
 
@@ -70,8 +71,11 @@ class SklRandSearch(BaseRandomSearch):
         best_models = self._import_best_models(model_directory)
         best_models_count = len(best_models)
         self.logger.info("loaded the previously found {} models at the {} auc level".format(best_models_count,
-                                                                                            score_cutoff))
-
+                                                                                        score_cutoff))
+        i = 1
+        for asd in param_space:
+            i *= len(param_space[asd])
+        print(i)
         # run randomized search
         rand_searcher = RandomizedSearchCV(
             param_distributions=param_space,
@@ -121,7 +125,7 @@ if __name__ == "__main__":
     logger = get_logger('LGBMContRandSearch', log_dir)
 
     logger.info("########## Started new {} session ##########".format(config.CORE_SETTINGS['name']))
-    logger.info("loading data...")
+    logger.info("loading data ...")
     X = pandas.read_csv(pkl_dir + "/train_imp_na_df.csv")
     y = X["TARGET"].values
     X = X.drop("TARGET", axis=1)
