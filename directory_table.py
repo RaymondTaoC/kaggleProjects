@@ -23,6 +23,7 @@ _file_systems = {
         'submissions': WINDOWS_PATH + 'Submissions',
         'h2o_cont_search': WINDOWS_PATH + 'H2oContSearchModels',
         'lgbm_cont_search': WINDOWS_PATH + 'LgbmContSearchModels',
+        'pso': WINDOWS_PATH + 'BestPsoSearchModels',
         'temp': WINDOWS_PATH + 'temp'
     }
 }
