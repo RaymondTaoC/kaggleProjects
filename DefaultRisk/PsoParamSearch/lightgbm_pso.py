@@ -9,7 +9,7 @@ from pyswarms.single import GlobalBestPSO
 paths = get_paths(station='Subgraph')
 # get some data
 data_dir, pkl_dir = paths['data_dir'], paths['pkl_dir']
-lgbm_cont_dir, log_dir = paths['lgbm_cont_search'], paths['logs']
+pso_dir, log_dir = paths['temp'], paths['logs']
 
 X = pandas.read_csv(pkl_dir + "/train_imp_na_df.csv")
 y = X["TARGET"].values
@@ -25,8 +25,9 @@ X = X.values
 
 
 class Lightgbm_Pso:
-    def __init__(self, cutoff, eval_metric, save_path, init_position=None):
-        self.save_path = save_path
+    def __init__(self, session_name, cutoff, eval_metric, save_dir, init_position=None):
+        self.name = session_name
+        self.save_dir = save_dir
         self.cutoff = cutoff
         self.position = init_position
         self.eval_metric = eval_metric
@@ -54,9 +55,17 @@ class Lightgbm_Pso:
             else:
                 fit_params[param] = particle[i]
             i += 1
-        clf = LGBMClassifier(random_state=123, **fit_params)
+        clf = LGBMClassifier(random_state=123,
+                             max_bin=15,
+                             device='gpu',
+                             gpu_use_dp=False,
+                             save_binary=True,
+                             verbose=-1,
+                             boosting_type='gbdt',
+                             objective='binary',
+                             **fit_params)
         scores = cross_val_score(estimator=clf, X=X, y=y, cv=5, scoring=self.eval_metric)
-        return np.average(scores)
+        return 1 - np.average(scores)
 
     def cost_func(self, particles):
         """Higher-level method to calculate the score of each particle.
@@ -89,26 +98,36 @@ class Lightgbm_Pso:
         best_cost, best_position = optimizer.optimize(self.cost_func, print_step=print_step,
                                                       iters=iters, verbose=verbose)
 
-        if best_cost > self.cutoff:
+        if 1 - best_cost > self.cutoff:
             self.save_position(best_cost, best_position)
         else:  # doesnt score well enough
             print('not high')
 
     def save_position(self, score, position):
-        pos = pandas.DataFrame(data=position, columns=self.hyperparameters)
+        import os
+        pos = pandas.DataFrame(data=[position], columns=self.hyperparameters)
         # Convert all int params to int
         for int_param in self.integer_params:
             pos[int_param] = pos[int_param].astype(int)
 
-        pos['Score'] = score
-        pos.to_csv(self.save_path, index=False)
+        pos['Score'] = 1 - score
+        os.mkdir("{}/{}".format(self.save_dir, self.name))
+        pos.to_csv("{}/{}/{}.csv".format(self.save_dir, self.name, score), index=True)
 
 
 if __name__ == "__main__":
-    test = Lightgbm_Pso(0.5, 'roc_auc', '/home/user/Public/pso_test.csv')
-    test.add_hyperparameter('num_boost_round', 25, 50, True)
-    test.add_hyperparameter('n_estimators', 10, 100, True)
+    test = Lightgbm_Pso(save_dir=pso_dir, session_name='test_run', cutoff=0.5, eval_metric='roc_auc')
+
+    test.add_hyperparameter('num_iterations', 175, 275, True)
+    test.add_hyperparameter('subsample', 0.6, 1.0)
+    test.add_hyperparameter('colsample_bytree', 0.5, 1.0)
+    test.add_hyperparameter('min_child_samples', 30, 70, True)
+    test.add_hyperparameter('max_depth', 5, 17, True)
     test.add_hyperparameter('learning_rate', 0.001, 0.1)
+    test.add_hyperparameter('n_estimators', 1000, 10000, True)
+    test.add_hyperparameter('num_leaves', 50, 100, True)
+    test.add_hyperparameter('reg_alpha', 1, 2)
+    test.add_hyperparameter('reg_lambda', 1, 2)
     test.run(particles=2,
              options={'c1': 0.5, 'c2': 0.3, 'w': 0.9},
              print_step=1,

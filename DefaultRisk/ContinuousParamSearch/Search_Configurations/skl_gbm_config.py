@@ -3,10 +3,10 @@ from lightgbm.sklearn import LGBMClassifier
 CORE_SETTINGS = {
     'estimator': LGBMClassifier(random_state=123,
                                 max_bin=15,
-				device='gpu',
+                                device='gpu',
                                 gpu_use_dp=False,
-				save_binary=True,
-				verbose=-1),
+                                save_binary=True,
+                                verbose=-1),
     'name': 'GBM',
     'eval_metric': 'roc_auc'
 }
@@ -17,7 +17,7 @@ SEARCH_SETTINGS = {
     'n_models': 100,
     'rand_seed': 1341,
     'param_space': {
-	'num_iterations': [200, 225, 250],
+        'num_iterations': [200, 225, 250],
         'subsample': [(6 + (x / 10)) / 10 for x in range(0, 41, 5)],
         'colsample_bytree': [(5 + (x / 10)) / 10 for x in range(0, 51, 5)],
         'min_child_samples': list(range(30, 61, 3)),
