@@ -11,9 +11,9 @@ parser = ArgumentParser()
 parser.add_argument('-s', help='work station registered in kaggleProjects.directory_table.py')
 parser.add_argument('-i', help='iterations of swarm optimisation')
 parser.add_argument('-p', help='number of particles to generate')
+parser.add_argument('-d', help='cpu or gpu')
 parser.add_argument('-n', help='name of session')
 args = parser.parse_args()
-
 
 # Import paths
 paths = get_paths(station=args.s)
@@ -36,30 +36,31 @@ for x in set(meta.columns):
 del meta
 X = X.values
 
-
 # Init swarm optimisation
-constant_params_cpu = {
-    'random_state': 123,
-    'max_bin': 15,
-    'device': 'cpu',
-    'save_binary': True,
-    'verbose': -1,
-    'boosting_type': 'gbdt',
-    'objective': 'binary'
-}
-constant_params_gpu = {
-    'random_state': 123,
-    'max_bin': 15,
-    'device': 'gpu',
-    'gpu_use_dp': False,
-    'save_binary': True,
-    'verbose': -1,
-    'boosting_type': 'gbdt',
-    'objective': 'binary'
+constant_param = {
+    'cpu': {
+        'random_state': 123,
+        'max_bin': 15,
+        'device': 'cpu',
+        'save_binary': True,
+        'verbose': -1,
+        'boosting_type': 'gbdt',
+        'objective': 'binary'
+    },
+    'gpu': {
+        'random_state': 123,
+        'max_bin': 15,
+        'device': 'gpu',
+        'gpu_use_dp': False,
+        'save_binary': True,
+        'verbose': -1,
+        'boosting_type': 'gbdt',
+        'objective': 'binary'
+    }
 }
 swarm_optimizer = CVCostSwarm(
     session_name=args.n,
-    estimator=LGBMClassifier(**constant_params_cpu),
+    estimator=LGBMClassifier(**constant_param),
     cutoff=0.5,
     eval_metric='roc_auc',
     save_dir=pso_dir,
@@ -97,7 +98,6 @@ swarm_optimizer.optimise_options(
 logger.info('started running swarm ...')
 swarm_optimizer.run(
     particles=int(args.p),
-    options={'c1': 0.5, 'c2': 0.3, 'w': 0.9},
     print_step=1,
     iters=int(args.i)
 )
@@ -109,4 +109,3 @@ logger.info('# successfully completed swarm optimisation for {} shutting down #'
 # Todo: Implement other estimators
 # Todo: Random grid search for pso options
 # Todo: improve memory efficiency i,e, immediately delete vars after usage
-

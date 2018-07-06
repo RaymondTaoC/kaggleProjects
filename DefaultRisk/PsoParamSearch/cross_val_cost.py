@@ -38,6 +38,9 @@ class CVCostSwarm(PsoParamSearch):
         for int_param in self.integer_params:
             pos[int_param] = pos[int_param].astype(int)
 
+        pos['options'] = str(self.options)
         pos['Score'] = 1 - score
-        os.mkdir("{}/{}".format(self.save_dir, self.name))
+        path = "{}/{}".format(self.save_dir, self.name)
+        if not os.path.isdir(path):
+            os.mkdir(path)
         pos.to_csv("{}/{}/{}.csv".format(self.save_dir, self.name, score), index=True)

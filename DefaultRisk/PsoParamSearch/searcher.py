@@ -52,13 +52,13 @@ class PsoParamSearch:
         j = [self.particle_cost_func(particles[i]) for i in range(n_particles)]
         return np.array(j)
 
-    def run(self, particles, options, print_step=100, iters=1000, verbose=3):
+    def run(self, particles, print_step=100, iters=1000, verbose=3):
         # options = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
 
         # Call instance of PSO
         optimizer = GlobalBestPSO(n_particles=particles,
                                   dimensions=len(self.hyperparameters),
-                                  options=options,
+                                  options=self.options,
                                   bounds=(np.array(self.param_minimums), np.array(self.param_maximums)),
                                   init_pos=self.position)
 
